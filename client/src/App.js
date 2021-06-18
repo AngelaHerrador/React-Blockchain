@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
+import HelloWorld from "./contracts/HelloWorld.json";
 import getWeb3 from "./getWeb3";
 
 import "./App.css";
@@ -22,10 +23,15 @@ class App extends Component {
         SimpleStorageContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
+        deployedNetwork = HelloWorld.networks[networkId];
+        const helloWorldInstance = new web3.eth.Contract(
+          HelloWorld.abi,
+          deployedNetwork && deployedNetwork.address
+        );
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
+      this.setState({ web3, accounts, contract: instance, helloWorldContract: helloWorldInstance }, this.runExample);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -36,7 +42,7 @@ class App extends Component {
   };
 
   runExample = async () => {
-    const { accounts, contract } = this.state;
+    const { accounts, contract, helloWorldContract } = this.state;
 
     // Stores a given value, 5 by default.
     await contract.methods.set(5).send({ from: accounts[0] });
@@ -44,8 +50,12 @@ class App extends Component {
     // Get the value from the contract to prove it worked.
     const response = await contract.methods.get().call();
 
+    const greetingResponse = await helloWorldContract.methods
+      .getGreeting()
+      .call();
+
     // Update state with the result.
-    this.setState({ storageValue: response });
+    this.setState({ storageValue: response, greeting: greetingResponse });
   };
 
   render() {
@@ -65,6 +75,7 @@ class App extends Component {
           Try changing the value stored on <strong>line 42</strong> of App.js.
         </p>
         <div>The stored value is: {this.state.storageValue}</div>
+        <div>The greeting response is: {this.state.greeting}</div>
       </div>
     );
   }
