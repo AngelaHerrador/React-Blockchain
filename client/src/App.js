@@ -18,44 +18,55 @@ class App extends Component {
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
-      const instance = new web3.eth.Contract(
+      let deployedNetwork = SimpleStorageContract.networks[networkId];
+      const storageInstance = new web3.eth.Contract(
         SimpleStorageContract.abi,
-        deployedNetwork && deployedNetwork.address,
+        deployedNetwork && deployedNetwork.address
       );
-        deployedNetwork = HelloWorld.networks[networkId];
-        const helloWorldInstance = new web3.eth.Contract(
-          HelloWorld.abi,
-          deployedNetwork && deployedNetwork.address
-        );
+      deployedNetwork = HelloWorld.networks[networkId];
+      const helloWorldInstance = new web3.eth.Contract(
+        HelloWorld.abi,
+        deployedNetwork && deployedNetwork.address
+      );
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance, helloWorldContract: helloWorldInstance }, this.runExample);
+      this.setState(
+        {
+          web3,
+          accounts,
+          storageContract: storageInstance,
+          helloWorldContract: helloWorldInstance,
+        },
+        this.runExample
+      );
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
-        `Failed to load web3, accounts, or contract. Check console for details.`,
+        `Failed to load web3, accounts, or contract. Check console for details.`
       );
       console.error(error);
     }
   };
 
   runExample = async () => {
-    const { accounts, contract, helloWorldContract } = this.state;
+    const { accounts, storageContract, helloWorldContract } = this.state;
 
     // Stores a given value, 5 by default.
-    await contract.methods.set(5).send({ from: accounts[0] });
+    await storageContract.methods.set(5).send({ from: accounts[0] });
 
     // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
+    const storageResponse = await storageContract.methods.get().call();
 
     const greetingResponse = await helloWorldContract.methods
       .getGreeting()
       .call();
 
     // Update state with the result.
-    this.setState({ storageValue: response, greeting: greetingResponse });
+    this.setState({
+      storageValue: storageResponse,
+      greeting: greetingResponse,
+    });
   };
 
   render() {
@@ -72,7 +83,7 @@ class App extends Component {
           a stored value of 5 (by default).
         </p>
         <p>
-          Try changing the value stored on <strong>line 42</strong> of App.js.
+          Try changing the value stored on <strong>line 40</strong> of App.js.
         </p>
         <div>The stored value is: {this.state.storageValue}</div>
         <div>The greeting response is: {this.state.greeting}</div>
